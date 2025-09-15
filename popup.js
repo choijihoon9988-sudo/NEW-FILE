@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBar: document.getElementById('progressBar'),
         progressText: document.getElementById('progressText'),
         // 템플릿 관련
-        templateDrawer: document.getElementById('templateDrawer'), // [추가]
-        templateToggleButton: document.getElementById('templateToggleButton'), // [추가]
+        templateDrawer: document.getElementById('templateDrawer'),
+        templateToggleButton: document.getElementById('templateToggleButton'),
         templateSelectButton: document.getElementById('templateSelectButton'),
         templateDropdownContent: document.getElementById('templateDropdownContent'),
         // 맥락 관련
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.toneSelect.value = userFlowData.tone;
             elements.templateSelectButton.textContent = template.name;
             elements.templateDropdownContent.classList.remove('show');
-            elements.templateDrawer.style.display = 'none'; // [수정] 적용 후 서랍 닫기
+            elements.templateDrawer.style.display = 'none';
             alert(`'${template.name}' 템플릿이 적용되었습니다. 마지막 단계로 이동합니다.`);
             flowManager.navigateTo(4);
         },
@@ -277,23 +277,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 핵심 로직: 프롬프트 생성 ---
     const generatePrompt = async () => {
-        if (!apiKey) { alert("API 키를 먼저 저장해주세요."); elements.settingsButton.click(); return; }
+        if (!apiKey) {
+            alert("API 키를 먼저 저장해주세요.");
+            elements.settingsButton.click();
+            return;
+        }
         userFlowData.question = elements.questionInput.value.trim();
         userFlowData.style = elements.answerStyleSelect.value;
         userFlowData.tone = elements.toneSelect.value;
         const contextText = snippets.join('\n\n');
+
         const metaPrompt = `당신은 사용자의 요청을 분석하여 최적의 프롬프트를 생성하는 'AI 프롬프트 엔지니어'입니다. 주어진 [작업 목표]와 [핵심 질문], 그리고 [대화 맥락]을 종합하여, 아래 [출력 조건]에 맞는 최종 프롬프트만 출력해주세요. 다른 설명은 일절 포함하지 마세요.\n\n---\n[작업 목표]: ${userFlowData.goal}\n[핵심 질문]: ${userFlowData.question}\n[대화 맥락]: ${contextText || "없음"}\n---\n[출력 조건]:\n- 최종 답변 형식: '${userFlowData.style}'\n- 어조/관점: '${userFlowData.tone}'\n- 맥락과 질문의 의도를 명확히 결합하여, AI가 풍부한 답변을 생성하도록 상세하게 질문을 재구성할 것.\n---`;
+        
         flowManager.navigateTo(5);
         elements.resultOutput.value = `✨ 최적 프롬프트를 생성 중입니다...`;
         elements.generateButton.disabled = true;
-        const result = await callGeminiAPI(apiKey, metaPrompt, selectedModel);
-        if (result.success) {
-            elements.resultOutput.value = result.data;
-            elements.likeButton.style.display = 'block';
-        } else {
-            elements.resultOutput.value = result.error;
+
+        try {
+            // Firebase Functions 대신 원래의 callGeminiAPI를 직접 호출
+            const result = await callGeminiAPI(apiKey, metaPrompt, selectedModel);
+            if (result.success) {
+                elements.resultOutput.value = result.data;
+                elements.likeButton.style.display = 'block';
+            } else {
+                elements.resultOutput.value = `⚠️ 오류 발생:\n\n${result.error}`;
+            }
+        } catch (error) {
+            console.error("generatePrompt 함수에서 심각한 오류 발생:", error);
+            elements.resultOutput.value = `⚠️ 예측하지 못한 오류가 발생했습니다. 개발자 콘솔을 확인해주세요: ${error.message}`;
+        } finally {
+            elements.generateButton.disabled = false;
         }
-        elements.generateButton.disabled = false;
     };
 
 
@@ -308,14 +322,13 @@ document.addEventListener('DOMContentLoaded', () => {
             flowManager.navigateTo(3);
         });
 
-        // [수정] 템플릿 및 설정 버튼 리스너
         elements.settingsButton.addEventListener('click', () => {
             elements.apiKeySection.style.display = elements.apiKeySection.style.display === 'none' ? 'block' : 'none';
-            elements.templateDrawer.style.display = 'none'; // 다른 창 열면 템플릿 창은 닫기
+            elements.templateDrawer.style.display = 'none';
         });
         elements.templateToggleButton.addEventListener('click', () => {
              elements.templateDrawer.style.display = elements.templateDrawer.style.display === 'none' ? 'block' : 'none';
-             elements.apiKeySection.style.display = 'none'; // 다른 창 열면 API 창은 닫기
+             elements.apiKeySection.style.display = 'none';
         });
 
         elements.saveApiKeyButton.addEventListener('click', () => {

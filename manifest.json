@@ -17,7 +17,8 @@
     "activeTab"
   ],
   "host_permissions": [
-    "*://gemini.google.com/*"
+    "<all_urls>",
+    "https://generativelanguage.googleapis.com/*"
   ],
   "icons": {
     "128": "icon.png"
