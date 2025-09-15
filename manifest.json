@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "AI 프롬프트 엔지니어 v5.0 (지능형 추천)",
+  "version": "5.0",
+  "description": "대화 중 중요 맥락을 저장하고, 이를 기반으로 최적의 질문을 생성합니다.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://gemini.google.com/*"
+  ],
+  "icons": {
+    "128": "icon.png"
+  },
+  "commands": {
+    "add-context-snippet": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S"
+      },
+      "description": "선택한 텍스트를 핵심 맥락으로 추가"
+    },
+    "add-as-question": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Q"
+      },
+      "description": "선택한 텍스트를 단순 질문으로 추가"
+    }
+  }
+}
